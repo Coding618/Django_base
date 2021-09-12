@@ -149,3 +149,5 @@ PeopleInfo.objects.filter(book__name='天龙八部')
 
 # 查询图书阅读量大于30的所有人物
 PeopleInfo.objects.filter(book__readcount__gt=30)
+
+# 将硬盘的数据放到内存中，称作缓存  例如 redis
