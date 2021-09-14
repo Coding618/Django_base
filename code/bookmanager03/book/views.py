@@ -11,16 +11,17 @@ def create_book(request):
 
     return HttpResponse('craete')
 
-def shop(request, city_id, shop_id):
+def shop(request, city_id, mobile):
+    print(city_id, mobile)
     query_params = request.GET
     print(query_params)
-    # < QueryDict: {'order': ['readcount']} >
+    # < QueryDict: {'order': ['readcount']} >###
     # order = query_params.get('order')
     # order = query_params['order']
     # print(order)
     # <QueryDict: {'order': ['readcount', 'commentcount'], 'page': ['1']}>
-    order = query_params.getlist('order')
-    print(order)
+    # order = query_params.getlist('order')
+    # print(order)
     return HttpResponse("光哥的的小世界")
 
 """
@@ -58,3 +59,31 @@ def json(request):
 def method(request):
     print(request.method)
     return HttpResponse('method')
+from django.http import JsonResponse
+def response(request):
+    # response = HttpResponse('res', status=598)
+    # response['name'] = 'Sherlock'
+    #
+    # return response
+    info={
+        'name':'Sherlock',
+        'address':'school'
+    }
+    girls = [
+        {
+            'name': 'excel',
+            'address': 'guangzhou'
+        },
+        {
+            'name': 'youzi',
+            'address': 'nanjing'
+        }
+    ]
+    """
+    safe=True 表 将dict转换成 json数据
+    """
+    # response = JsonResponse(data=girls, safe=False)
+    import json
+    data = json.dumps(girls)
+    return HttpResponse(data)
+
