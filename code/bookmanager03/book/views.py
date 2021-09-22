@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from book.models import BookInfo
 # Create your views here.
 def create_book(request):
@@ -85,5 +85,39 @@ def response(request):
     # response = JsonResponse(data=girls, safe=False)
     import json
     data = json.dumps(girls)
-    return HttpResponse(data)
+    # return HttpResponse(data)
+    return redirect('https://www.baidu.com')
 
+def set_cookie(request):
+
+    username = request.GET.get('username')
+    password = request.GET.get('password')
+    response = HttpResponse('set_coookir')
+
+    response.set_cookie('name', username, max_age=60*60)
+    response.set_cookie('password', password)
+    # response.delete_cookie('name')
+    return response
+def get_cookie(request):
+    print(request.COOKIES)
+    return HttpResponse('get_cookie')
+
+def set_session(request):
+    username = request.GET.get('username')
+    user_id = 1
+    request.session['user_id'] = 1
+    request.session['username'] = username
+
+    # request.session.clear()
+    # request.session.flush()
+    request.session.set_expiry(3600)
+    return HttpResponse('set_session')
+
+def get_session(request):
+    # 获取字典的时候，用get
+    user_id = request.session.get('user_id')
+    username = request.session.get('username')
+
+    # '%s'%username
+    content = '{}, {}'.format(user_id, username)
+    return HttpResponse(content)
