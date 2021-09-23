@@ -92,9 +92,9 @@ def set_cookie(request):
 
     username = request.GET.get('username')
     password = request.GET.get('password')
-    response = HttpResponse('set_coookir')
+    response = HttpResponse('set_coookie')
 
-    response.set_cookie('name', username, max_age=60*60)
+    response.set_cookie('username', username, max_age=60*60)
     response.set_cookie('password', password)
     # response.delete_cookie('name')
     return response
@@ -121,3 +121,44 @@ def get_session(request):
     # '%s'%username
     content = '{}, {}'.format(user_id, username)
     return HttpResponse(content)
+
+
+####################
+def login(request):
+    if request.method == 'GET':
+        return HttpResponse('GET 请求')
+    else:
+        return HttpResponse('POST 逻辑')
+
+
+
+from  django.views import View
+
+class LoginView(View):
+    def get(self, request):
+        return HttpResponse('get get geting')
+
+    def post(self, request):
+        return HttpResponse('post post posting')
+
+
+class Person(object):
+     def play(self):
+         pass
+
+     @classmethod
+     def say(cls):
+         pass
+     @staticmethod
+     def eat():
+         pass
+
+# Person.say()
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class OrderView(LoginRequiredMixin, View):
+    def get(self, request):
+        return HttpResponse("GET 我的订单里面必须登录")
+    def post(self, request):
+        return HttpResponse("POST 我的订单页面，这个页面必须登录")

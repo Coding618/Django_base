@@ -1,6 +1,7 @@
 from django.urls import path
-from book.views import create_book, shop, register, json, method, response, set_cookie, get_cookie, set_session, get_session
+from book.views import create_book, shop, register, json, method, response, set_cookie, get_cookie, set_session, get_session, login
 from django.urls import converters
+from book.views import LoginView, OrderView
 from django.urls.converters import register_converter
 
 class MoblieConverter:
@@ -25,4 +26,7 @@ urlpatterns = [
     path('get_cookie/', get_cookie),
     path('set_session/', set_session),
     path('get_session/', get_session),
+    path('login/', login),
+    path('163login/', LoginView.as_view()),
+    path('order/', OrderView.as_view()),
 ]
