@@ -12,6 +12,7 @@ Class-based views
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+    test ctrl + K 来进行git 的 git add commit 的操作
 """
 from django.contrib import admin
 from django.urls import path
