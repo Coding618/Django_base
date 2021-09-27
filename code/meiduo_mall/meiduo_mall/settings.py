@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    # 'apps.users'
 ]
 
 MIDDLEWARE = [
@@ -188,3 +189,5 @@ LOGGING = {
         },
     }
 }
+##############  AUTH_USER_MODEL 设置，指向自定义的模型，允许你覆盖默认的User 模型  ##########################
+AUTH_USER_MODEL = 'users.User'
