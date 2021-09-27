@@ -16,7 +16,7 @@ Including another URLconf
     git + shift + K 进行 git push 操作
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.http import HttpResponse
 import logging
 
@@ -29,5 +29,5 @@ def log(request):
     return HttpResponse('log')
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('log/', log),
+    path('', include('apps.users.urls')),
 ]
