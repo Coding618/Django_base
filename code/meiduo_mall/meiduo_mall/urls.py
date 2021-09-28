@@ -20,13 +20,18 @@ from django.urls import path, include
 from django.http import HttpResponse
 import logging
 
-def log(request):
-    logger = logging.getLogger('django')
-    logger.info('用户登录了')
-    logger.warning('redis缓存不足')
-    logger.error('该记录不存在')
-    logger.debug('~~~~~~~~~~')
-    return HttpResponse('log')
+# def log(request):
+#     logger = logging.getLogger('django')
+#     logger.info('用户登录了')
+#     logger.warning('redis缓存不足')
+#     logger.error('该记录不存在')
+#     logger.debug('~~~~~~~~~~')
+#     return HttpResponse('log')
+from utils.converters import UsernameConverter
+from django.urls import register_converter
+# 注册转换器
+register_converter(UsernameConverter, 'username')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apps.users.urls')),
