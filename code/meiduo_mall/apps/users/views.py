@@ -67,6 +67,7 @@ class MobileCountView(View):
         5. 返回响应
 """
 import json
+from django.contrib.auth import login
 class RegisterView(View):
     def post(self, request):
         # 1. 接收请求（POST - --- JSON）
@@ -102,8 +103,19 @@ class RegisterView(View):
         # 4. 数据入库
         try:
             # User.objects.create(username=username, password=password, mobile=mobile)
-            User.objects.create_user(username=username, password=password, mobile=mobile)
+            user = User.objects.create_user(username=username, password=password, mobile=mobile)
+            # 如何设置session信息
+            # request.session['user_id']=user.id
+            # Django提供了状态保持的方法
+            login(request, user)
         except Exception as e:
             return JsonResponse({'code': 400, 'errmsg': '注册地区'})
         return JsonResponse({'code': 0, 'errmsg': '注册成功！！！'})
         # 5. 返回响应
+"""
+如果需求是注册成功后表示用户认证通过，那么此时可以在注册成功后实现状态保持！！（注册成功，即登录）
+（注册成功，单独登录）
+状态保持两种方式：
+    在客户端信息使用cookie 
+    在服务端信息使用session
+"""
