@@ -27,14 +27,15 @@ import logging
 #     logger.error('该记录不存在')
 #     logger.debug('~~~~~~~~~~')
 #     return HttpResponse('log')
-from utils.converters import UsernameConverter, MobileConverter
+from utils.converters import UsernameConverter, MobileConverter,UUIDConverter
 from django.urls import register_converter
 # 注册转换器
 register_converter(UsernameConverter, 'username')
 register_converter(MobileConverter, 'mobile')
+register_converter(UUIDConverter, 'uuid')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("users.urls")),
-    path('', include("apps.verifications.urls"))
+    path('', include("verifications.urls"))
 ]

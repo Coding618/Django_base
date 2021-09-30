@@ -9,3 +9,10 @@ class MobileConverter:
     regex = '1[345789]\d{9}'
     def to_python(self, value):
         return value
+
+class UUIDConverter:
+    "自定义路由转换器去匹配手机号"
+    # 自定义UUID的正则表达式
+    regex = '[\w-]+'
+    def to_python(self, value):
+        return str(value)
