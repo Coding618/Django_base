@@ -1,3 +1,5 @@
+import logging
+
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -36,12 +38,12 @@ class ImageCodeView(View):
         # 3.1 进行redis的链接
         redis_cli = get_redis_connection('code')
         # 3.2 设置过期时间
-        redis_cli.setex(uuid, 60*2, text)
+        redis_cli.setex('img_%s' % uuid, 60*2, text)
         # 4. 返回图片二进制,不能返回二进制
         # content_type 的语法形式，大类/小类
         # content_type  (MIME 类型)
         # 图片： image/jpge,   image/gif, image/png
-        return HttpResponse(image, content_type='image/ipeg')
+        return HttpResponse(image, content_type='image/ipge')
 """
 1.注册 
 我们提供免费开发测试，【免费开发测试前，请先 注册 成为平台用户】。
@@ -79,28 +81,36 @@ class ImageCodeView(View):
             7.  返回响应
 """
 from random import randint
+import logging
+logger = logging.getLogger('django')
 class SmsCodeViwe(View):
     def get(self, request, mobile):
         # 1.  获取参数
         image_code = request.GET.get('image_code')
         uuid = request.GET.get('image_code_id')
         # 2.  验证参数
-        if not all({image_code, uuid}):
+        if not all([image_code, uuid]):
             return JsonResponse({'code': 400, 'errmsg': '参数不全'})
         # 3.  验证图片验证码
         # 3.1 链接 redis
         redis_cli = get_redis_connection('code')
         # 3.2 获取 redis 数据
-        redis_image_code = redis_cli.get(uuid)
+        redis_image_code = redis_cli.get('img_%s' % uuid)
         if redis_image_code is None:
             return JsonResponse({'code': 400, 'errmsg': '图片验证码失效'})
+        # 删除图形验证码，防止恶意测试图形验证码
+        try:
+            redis_cli.delete('img_%s' % uuid)
+        except Exception as e:
+            logger.error(e)
+
         # 3.3 对比
         if redis_image_code.decode().lower() != image_code.lower():
             return JsonResponse({'code': 400, 'errmsg': '图片验证码错误' })
         # 4.  生成短信验证码
         sms_code = '%06d' % randint(0, 999999)
         # 5.  保存短信验证码
-        redis_cli.setex(mobile, 300, sms_code)
+        redis_cli.setex('sms_%s ' % mobile, 300, sms_code)
         # 6.  发送短信验证码
         from libs.yuntongxun.sms import CCP
         CCP().send_template_sms(mobile, [sms_code, 5], 1)

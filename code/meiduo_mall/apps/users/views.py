@@ -71,6 +71,8 @@ from django.contrib.auth import login
 class RegisterView(View):
     def post(self, request):
         # 1. 接收请求（POST - --- JSON）
+            # 接收短信验证码的参数
+        sms_code_client = request.POST.get('sms_code')
         body_bytes = request.body
         body_bytes.decode()
         body_dict = json.loads(body_bytes)
@@ -89,17 +91,26 @@ class RegisterView(View):
             if not re.match('[a-zA-Z0-9_-]{5,20}', username):
                 return JsonResponse({'code': 400, 'errmsg': '用户名不满足规则'})
             # 3.3 密码满足规则
-            if not re.match('[a-zA-Z0-9_-]{5,20}', password):
-                return JsonResponse({'code': 400, 'errmsg': '密码不满足规则'})
-            # 3.4 确认密码和密码要一致
-            if not re.match('[a-zA-Z0-9_-]{5,20}', password2):
-                return JsonResponse({'code': 400, 'errmsg': '确认密码不满足规则'})
-            # 3.5 手机号满足规则，手机号也不能重复
-            if not re.match('[a-zA-Z0-9_-]{5,20}', mobile):
-                return JsonResponse({'code': 400, 'errmsg': '手机号不满足规则'})
-            # 3.6 需要同意协议
-            if not re.match('[a-zA-Z0-9_-]{5,20}', allow):
-                return JsonResponse({'code': 400, 'errmsg': '用户协议不满足规则'})
+            # if not re.match('[a-zA-Z0-9_-]{5,20}', password):
+            #     return JsonResponse({'code': 400, 'errmsg': '密码不满足规则'})
+            # # 3.4 确认密码和密码要一致
+            # if password2 != password:
+            #     return JsonResponse({'code': 400, 'errmsg': '确认密码不满足规则'})
+            # # 3.5 手机号满足规则，手机号也不能重复
+            # if not re.match('1[345789]\d{9}', mobile):
+            #     return JsonResponse({'code': 400, 'errmsg': '手机号不满足规则'})
+            # # 3.6 需要同意协议
+            # if not re.match('[a-zA-Z0-9_-]{5,20}', allow):
+            #     return JsonResponse({'code': 400, 'errmsg': '用户协议不满足规则'})
+        # 链接验证码redis
+        redis_conn = get_redis_connection('code')
+        sms_code_server = redis_conn.get('sms_%s' % mobile)
+        # 判断短信验证码是否过期
+        if not sms_code_server:
+            return http.JsonResponse({'code': 400, 'errmsg': '短信验证码失效'})
+        # 对比输入的和服务端存储的短信验证码是否一致
+        if sms_code_client != sms_code_server.decode():
+            return http.JsonResponse({'code': 400, 'errmsg': '短信验证码有误'})
         # 4. 数据入库
         try:
             # User.objects.create(username=username, password=password, mobile=mobile)
