@@ -68,11 +68,13 @@ class MobileCountView(View):
 """
 import json
 from django.contrib.auth import login
+from django_redis import get_redis_connection
 class RegisterView(View):
+
     def post(self, request):
         # 1. 接收请求（POST - --- JSON）
             # 接收短信验证码的参数
-        sms_code_client = request.POST.get('sms_code')
+
         body_bytes = request.body
         body_bytes.decode()
         body_dict = json.loads(body_bytes)
@@ -81,16 +83,17 @@ class RegisterView(View):
         password = body_dict.get('password')
         password2 = body_dict.get('password2')
         mobile = body_dict.get('mobile')
-        # sms_code = body_dict.get('sms_code')
+        sms_code = body_dict.get('sms_code')
         allow = body_dict.get('allow')
+
+        sms_code_client = request.POST.get('sms_code')
         # 3. 验证数据
             # 3.1 用户名、密码、确认密码，手机号，是否同意协议，是否都有
         if not all([username, password, password2, mobile, allow]):
             return JsonResponse({'code':400, 'errmsg': '参数不全'})
             # 3.2 用户名满足规则，用户名不能重复
-            if not re.match('[a-zA-Z0-9_-]{5,20}', username):
-                return JsonResponse({'code': 400, 'errmsg': '用户名不满足规则'})
-            # 3.3 密码满足规则
+        if not re.match('[a-zA-Z0-9_-]{5,20}', username):
+            return JsonResponse({'code': 400, 'errmsg': '用户名不满足规则'})            # 3.3 密码满足规则
             # if not re.match('[a-zA-Z0-9_-]{5,20}', password):
             #     return JsonResponse({'code': 400, 'errmsg': '密码不满足规则'})
             # # 3.4 确认密码和密码要一致
@@ -102,15 +105,34 @@ class RegisterView(View):
             # # 3.6 需要同意协议
             # if not re.match('[a-zA-Z0-9_-]{5,20}', allow):
             #     return JsonResponse({'code': 400, 'errmsg': '用户协议不满足规则'})
-        # 链接验证码redis
+        # # 链接验证码redis
+        # image_code = request.GET.get('image_code')
+        # uuid = request.GET.get('image_code_id')
+        # # 2.  验证参数
+        # if not all([image_code, uuid]):
+        #     return JsonResponse({'code': 400, 'errmsg': '参数不全'})
+
         redis_conn = get_redis_connection('code')
+        # redis_image_code = redis_conn.get('img_%s' % uuid)
+        # if redis_image_code is None:
+        #     return JsonResponse({'code': 400, 'errmsg': '图片验证码失效'})
+            # 删除图形验证码，防止恶意测试图形验证码
+            # 删除图形验证码，防止恶意测试图形验证码
+        # try:
+        #     redis_cli.delete('img_%s' % uuid)
+        # except Exception as e:
+        #     logger.error(e)
+        # 3.3 对比 验证码
+        # if redis_image_code.decode().lower() != image_code.lower():
+        #     return JsonResponse({'code': 400, 'errmsg': '图片验证码错误'})
         sms_code_server = redis_conn.get('sms_%s' % mobile)
         # 判断短信验证码是否过期
         if not sms_code_server:
-            return http.JsonResponse({'code': 400, 'errmsg': '短信验证码失效'})
+            return JsonResponse({'code': 400, 'errmsg': '短信验证码失效'})
         # 对比输入的和服务端存储的短信验证码是否一致
-        if sms_code_client != sms_code_server.decode():
-            return http.JsonResponse({'code': 400, 'errmsg': '短信验证码有误'})
+        # if sms_code_client != sms_code_server.decode():
+        if sms_code != sms_code_server.decode():
+            return JsonResponse({'code': 400, 'errmsg': '短信验证码有误'})
         # 4. 数据入库
         try:
             # User.objects.create(username=username, password=password, mobile=mobile)

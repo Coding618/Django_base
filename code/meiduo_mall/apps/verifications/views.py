@@ -106,11 +106,11 @@ class SmsCodeViwe(View):
 
         # 3.3 对比
         if redis_image_code.decode().lower() != image_code.lower():
-            return JsonResponse({'code': 400, 'errmsg': '图片验证码错误' })
+            return JsonResponse({'code': 400, 'errmsg': '图片验证码错误'})
         # 4.  生成短信验证码
         sms_code = '%06d' % randint(0, 999999)
         # 5.  保存短信验证码
-        redis_cli.setex('sms_%s ' % mobile, 300, sms_code)
+        redis_cli.setex('sms_%s' % mobile, 300, sms_code)
         # 6.  发送短信验证码
         from libs.yuntongxun.sms import CCP
         CCP().send_template_sms(mobile, [sms_code, 5], 1)
