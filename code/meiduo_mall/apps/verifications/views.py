@@ -107,12 +107,18 @@ class SmsCodeViwe(View):
         # 3.3 对比
         if redis_image_code.decode().lower() != image_code.lower():
             return JsonResponse({'code': 400, 'errmsg': '图片验证码错误'})
+        # 提取发送短信的标记，看看有没有
+        sned_flag = redis_cli.get('send_flag_%s' % mobile)
+        if sned_flag is not None:
+            return JsonResponse({'code': 400, 'errmsg': '请勿重复发送短信'})
         # 4.  生成短信验证码
         sms_code = '%06d' % randint(0, 999999)
         # 5.  保存短信验证码
         redis_cli.setex('sms_%s' % mobile, 300, sms_code)
+        # 添加一个发送标记，防止频繁发送手机验证码
+        redis_cli.setex('send_flag_%s' % mobile, 120, 1)
         # 6.  发送短信验证码
         from libs.yuntongxun.sms import CCP
         CCP().send_template_sms(mobile, [sms_code, 5], 1)
-        # 7.  返回响应 ?
+        # 7.  返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok'})
