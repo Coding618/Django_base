@@ -186,6 +186,10 @@ class LoginView(View):
         # 2. 验证参数
         if not all([username, password]):
             return JsonResponse({'code': 400, 'errmsg': '参数不全'})
+        if re.match('1[3-9]\d{9}', username):
+            User.USERNAME_FIELD = 'mobile'
+        else:
+            User.USERNAME_FIELD = 'username'
 
         # 3. 验证用户名和密码是否正确;
         # User.objects.filter(username=username)
