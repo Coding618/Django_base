@@ -214,3 +214,37 @@ class LoginView(View):
         # 为了首页显示用户信息
         response.set_cookie('username', username)
         return response
+
+"""
+前端：
+    当用户点击退出按钮的时候，前端发送一个 axios delete请求
+后端：
+    请求
+    业务逻辑        退出
+    响应          返回JSON数据
+"""
+from django.contrib.auth import logout
+class LogoutView(View):
+    def delete(self, request):
+
+        logout(request)
+
+        response = JsonResponse({'code': 0, 'errmsg': "退出登录成功"})
+
+        response.delete_cookie('username')
+        return response
+
+"""
+用户中心，也必须是登录用户
+LoginRequiredMixin 未登录的用户， 会返回 重定向，重定向并不是JSON数据
+
+我们需要返回JSON数据
+"""
+
+from utils.views import LoginRequiredJSONMixin
+
+class CenterView(LoginRequiredJSONMixin,View):
+
+    def get(self, request):
+        return JsonResponse({'code': 0, 'errmsg': 'OK!'})
+
