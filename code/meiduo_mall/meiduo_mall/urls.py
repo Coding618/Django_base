@@ -36,6 +36,6 @@ register_converter(UUIDConverter, 'uuid')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("users.urls")),
-    path('', include("verifications.urls"))
+    path('', include("apps.users.urls")),
+    path('', include("apps.verifications.urls"))
 ]

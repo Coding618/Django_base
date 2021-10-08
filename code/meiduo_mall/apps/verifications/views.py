@@ -81,6 +81,7 @@ class ImageCodeView(View):
             7.  返回响应
 """
 from random import randint
+from libs.yuntongxun.sms import CCP
 import logging
 logger = logging.getLogger('django')
 class SmsCodeViwe(View):
@@ -113,12 +114,21 @@ class SmsCodeViwe(View):
             return JsonResponse({'code': 400, 'errmsg': '请勿重复发送短信'})
         # 4.  生成短信验证码
         sms_code = '%06d' % randint(0, 999999)
+        # 管道 3步
+        #   1. 新建一个管道
+
+        #   2. 管道收集指令
+        #   3. 管道执行指令
+        pipeline = redis_cli.pipeline()
         # 5.  保存短信验证码
-        redis_cli.setex('sms_%s' % mobile, 300, sms_code)
+        pipeline.setex('sms_%s' % mobile, 300, sms_code)
         # 添加一个发送标记，防止频繁发送手机验证码
-        redis_cli.setex('send_flag_%s' % mobile, 120, 1)
+        pipeline.setex('send_flag_%s' % mobile, 120, 1)
+        pipeline.execute()
         # 6.  发送短信验证码
-        from libs.yuntongxun.sms import CCP
-        CCP().send_template_sms(mobile, [sms_code, 5], 1)
+        # CCP().send_template_sms(mobile, [sms_code, 5], 1)
+        from celery_tasks.sms.tasks import celery_send_sms_code
+        # delay 的参数  等同于 任务（函数）的参数
+        celery_send_sms_code.delay(mobile, sms_code)
         # 7.  返回响应
-        return JsonResponse({'code': 0, 'errmsg': 'ok'})
+        return JsonResponse({'code': 0, 'errmsg': '验证码生成OK！！！ '})
