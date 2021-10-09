@@ -1,3 +1,6 @@
+from django.shortcuts import render
+
+# Create your views here.
 """
 第三方登录的步骤：
 1. QQ互联开发平台申请成为开发者（可不做）
