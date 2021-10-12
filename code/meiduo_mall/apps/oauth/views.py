@@ -1,3 +1,5 @@
+
+
 from django.http import JsonResponse
 from django.shortcuts import render
 
@@ -83,6 +85,8 @@ class QQLoginURLView(View):
 """
 from apps.oauth.models import OAuthQQUser
 from django.contrib.auth import login
+import json
+from apps.users.models import User
 class OauthQQView(View):
 
     def get(self, request):
@@ -118,5 +122,60 @@ class OauthQQView(View):
         # 5. 如果用户已经绑定用户信息， 直接登录
         # 6. 如果用户未绑定用户信息，需进行绑定用户信息，再进行登录
 
-        pass
+    def post(self, request):
+        # 1. 接受请求
+        data = json.loads(request.body.decode())
+        # 2. 获取请求的参数      openid
+        mobile = data.get('mobile')
+        sms_code = data.get('sms_code')
+        password = data.get('password')
+        openid = data.get('access_token')
+        # 验证请求参数
+        if not all([mobile, sms_code, password, openid]):
+            return JsonResponse({'code': 400, 'errmsg': '参数缺失！'})
+        # 3. 根据手机号进行用户信息的查询;
+        try:
+            user = User.objects.get(mobile=mobile)
+        except user.DoesNotExist:
+            # 不存在
+            # 5. 查询到用户的手机号没有注册;   我们创建一个user信息，然后再绑定;
+            user = User.objects.create_user(username=mobile, mobile=mobile, password=password)
+            # response = JsonResponse({'code': 400, 'access_token': openid})
+            # return response
+        else:
+            # 存在
+            # 4. 查询到用户的手机号已经被注册了，判断密码是否正确;密码正确就可以直接保存（绑定） 用户和 openid 的信息
+            if not user.check_password(password):
+                return JsonResponse({'code': 400, 'errmsg': '密码错误或者帐号错误'})
+            OAuthQQUser.objects.create(user=user, openid=openid)
+
+        # 6. 完成状态保持
+        login(request, user)
+        # 7. 返回响应
+        response = JsonResponse({'code': 0, 'errmsg': 'ok'})
+
+        response.set_cookie('username', user.username)
+
+        return response
+
+"""
+需求：
+    绑定帐号信息，点击保存的时候，需要做什么？
+    QQ（openid）和 美多的帐号信息
+    绑定时， 需要提交 手机、密码、验证码、openid
+前端： 当用户输入，手机号、密码、短信验证码之后，就发送axios请求；  请求时，需要携带 mobile、password、sms_code、access_token(openid) 
+后端：
+    请求：         接受参数，获取请求参数
+    业务逻辑：       绑定，完成状态保持
+    响应：         返回，code = 0, 跳转到首页
+    路由：         POST
+    步骤:
+        1. 接受请求
+        2. 获取请求的参数      openid
+        3. 根据手机号进行用户信息的查询;
+        4. 查询到用户的手机号已经被注册了，判断密码是否正确;密码正确就可以直接保存（绑定） 用户和 openid 的信息
+        5. 查询到用户的手机号没有注册;   我们创建一个user信息，然后再绑定;
+        6. 完成状态保持
+        7. 返回响应
+"""
 
