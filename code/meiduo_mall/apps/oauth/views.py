@@ -61,3 +61,45 @@ class QQLoginURLView(View):
         # 3. 返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok', 'login_url': qq_login_url})
 
+"""
+需求： 获取code， 通过code，获取token，通过token 再获取openid
+前端：
+    应该获取 用户同意之后，生成的code， 把code发送给后端
+后端：
+    请求：             获取code
+    业务逻辑：           通过code 去获取 token，再通过token获取openid
+                    根据 openid 进行判断
+                    如果用户已经绑定用户信息， 直接登录
+                    如果用户未绑定用户信息，需进行绑定用户信息，再进行登录
+    响应：     
+    路由：       GET       oauth_callback/?code=XXXXX
+    步骤：
+        1. 获取code
+        2. 通过code 去获取 token，
+        3. 再通过token获取openid
+        4. 根据 openid 进行判断
+        5. 如果用户已经绑定用户信息， 直接登录
+        6. 如果用户未绑定用户信息，需进行绑定用户信息，再进行登录
+"""
+
+class OauthQQView(View):
+
+    def get(self, request):
+        # 1. 获取code
+        code = request.GET.get('code')
+        if code is None:
+            return JsonResponse({'code': 400, 'errmsg': '参数不全！！！'})
+        # 2. 通过code 去获取 token，
+        qq = OAuthQQ(client_id=QQ_CLIENT_ID,
+                     client_secret=QQ_CLIENT_SECRET,
+                     redirect_uri=QQ_REDIRECT_URI,
+                     state=None)
+        token = qq.get_access_token(code)
+        # 3. 再通过token获取openid
+        openid = qq.get_open_id(token)
+        # 4. 根据 openid 进行判断
+        # 5. 如果用户已经绑定用户信息， 直接登录
+        # 6. 如果用户未绑定用户信息，需进行绑定用户信息，再进行登录
+
+        pass
+
