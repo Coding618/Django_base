@@ -168,14 +168,34 @@ class OauthQQView(View):
     请求：         接受参数，获取请求参数
     业务逻辑：       绑定，完成状态保持
     响应：         返回，code = 0, 跳转到首页
-    路由：         POST
+    路由：         POST       oauth_callback/
     步骤:
-        1. 接受请求
-        2. 获取请求的参数      openid
-        3. 根据手机号进行用户信息的查询;
-        4. 查询到用户的手机号已经被注册了，判断密码是否正确;密码正确就可以直接保存（绑定） 用户和 openid 的信息
-        5. 查询到用户的手机号没有注册;   我们创建一个user信息，然后再绑定;
-        6. 完成状态保持
-        7. 返回响应
+        # 1. 接受请求
+        # 2. 获取请求的参数      openid
+        # 3. 根据手机号进行用户信息的查询;
+        # 4. 查询到用户的手机号已经被注册了，判断密码是否正确;密码正确就可以直接保存（绑定） 用户和 openid 的信息
+        # 5. 查询到用户的手机号没有注册;   我们创建一个user信息，然后再绑定;
+        # 6. 完成状态保持
+        # 7. 返回响应
 """
 
+############### itsdangerous 的基本使用 #########################
+# itsdangerous 就是为了数据加密的
+## 加密
+# 1. 导入 itsdangerous 的类
+from meiduo_mall import settings
+from  itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+# 2. 创建类的实例对象
+# secret_key,       密钥
+# expires_in=None   过期时间
+s = Serializer(secret_key=settings.SECRET_KEY, expires_in=3600)
+# 3. 加密数据
+token = s.dumps({'openid':'1234567890'})
+# b'eyJhbGciOiJIUzUxMiIsImlhdCI6MTYzNDcwNzcxMiwiZXhwIjoxNjM0NzExMzEyfQ.eyJvcGVuaWQiOiIxMjM0NTY3ODkwIn0.X3FYZCj-xJz7NnuyYtWxm2R2pgDu2X4mMtP1S4uTnE7zYHttfPlsenMQn9Lq14N7dhkl-Iv-YOrPgP3cjkicGQ'
+
+## 解密
+from meiduo_mall import settings
+from  itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+s = Serializer(secret_key=settings.SECRET_KEY, expires_in=3600)
+s.loads(token)
+# {'openid': '1234567890'}
