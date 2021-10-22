@@ -1,5 +1,4 @@
-
-
+from django.db import DatabaseError
 from django.http import JsonResponse
 from django.shortcuts import render
 
@@ -87,6 +86,7 @@ from apps.oauth.models import OAuthQQUser
 from django.contrib.auth import login
 import json
 from apps.users.models import User
+from apps.oauth.utils import check_access_token, generic_openid
 class OauthQQView(View):
 
     def get(self, request):
@@ -107,7 +107,19 @@ class OauthQQView(View):
             qquser = OAuthQQUser.objects.get(openid=openid)
         except OAuthQQUser.DoesNotExist:
             # 不存在
-            response = JsonResponse({'code': 400, 'access_token': openid})
+            # 5. 如果没有绑定，则需要绑定
+            """
+            封装的思想：
+                所谓的封装的思想其实就是把   一些实现了特定功能的代码， 封装成为一个函数（方法）
+            封装的目的：
+                解耦          当需求发生改变的时候，对代码的修改比较小，比较方便
+            封装的步骤：
+                1. 把要封装的代码，定义到一个函数（方法）中欧你
+                2. 优化封装的代码
+                3. 验证封装的代码
+            """
+            access_token = generic_openid(openid)
+            response = JsonResponse({'code': 400, 'errmsg': 'ok', 'access_token': access_token})
             return response
         else:
             # 存在
@@ -129,17 +141,25 @@ class OauthQQView(View):
         mobile = data.get('mobile')
         sms_code = data.get('sms_code')
         password = data.get('password')
-        openid = data.get('access_token')
-        # 验证请求参数
-        if not all([mobile, sms_code, password, openid]):
+        access_token = data.get('access_token')
+
+        # 验证请求参数   省略详细步骤
+        if not all([mobile, sms_code, password]):
             return JsonResponse({'code': 400, 'errmsg': '参数缺失！'})
+
+        # 添加 access_token 解密
+        openid = check_access_token(access_token)
+        if openid is None:
+            return JsonResponse({'code': 400, 'errmsg': '参数缺失'})
         # 3. 根据手机号进行用户信息的查询;
         try:
             user = User.objects.get(mobile=mobile)
-        except user.DoesNotExist:
+        except User.DoesNotExist:
             # 不存在
             # 5. 查询到用户的手机号没有注册;   我们创建一个user信息，然后再绑定;
-            user = User.objects.create_user(username=mobile, mobile=mobile, password=password)
+            user = User.objects.create_user(username=mobile,
+                                            password=password,
+                                            mobile=mobile)
             # response = JsonResponse({'code': 400, 'access_token': openid})
             # return response
         else:
@@ -147,7 +167,10 @@ class OauthQQView(View):
             # 4. 查询到用户的手机号已经被注册了，判断密码是否正确;密码正确就可以直接保存（绑定） 用户和 openid 的信息
             if not user.check_password(password):
                 return JsonResponse({'code': 400, 'errmsg': '密码错误或者帐号错误'})
+        try:
             OAuthQQUser.objects.create(user=user, openid=openid)
+        except DatabaseError:
+            return JsonResponse({'code': 400, 'errmsg': '往数据库添加数据出错了'})
 
         # 6. 完成状态保持
         login(request, user)
