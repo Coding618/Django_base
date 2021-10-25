@@ -246,6 +246,10 @@ from utils.views import LoginRequiredJSONMixin
 class CenterView(LoginRequiredJSONMixin,View):
 
     def get(self, request):
+        # request.user 就是 已经在登录的用户信息
+        # request.user 是来源于 中间件
+        # 系统会进行判断，如果我们确实是登录用户，则可以获取到，登录用户对应的 模型实例;
+        # 如果我们确实不是登录用户，到 request.user = AnonymousUser() 匿名用户
         info_data = {
             'username': request.user.username,
             'email': request.user.email,
@@ -254,3 +258,46 @@ class CenterView(LoginRequiredJSONMixin,View):
         }
         return JsonResponse({'code': 0, 'errmsg': 'OK!', 'info_data': info_data})
 
+"""
+需求：     1. 保存邮箱 2. 发送一封激活邮件     3. 用户激活邮件
+
+前端：     
+        当用户输入邮箱之后，点击保存，然后发送一个 axios 请求
+后端：
+    请求：     接收请求，获取数据
+    业务逻辑：   保存邮箱地址，发送一封激活邮件
+    响应：        JSON code=0
+    路由：     PUT
+    步骤：
+        1. 接收请求;
+        2. 获取数据;
+        3. 保存邮箱地址;
+        4. 发送一封验证邮件;
+        5. 返回响应
+需求（需要实现的功能） --》 思路（请求，业务逻辑，响应） --》步骤  --》代码实现
+"""
+class EmailView(LoginRequiredJSONMixin, View):
+    def put(self, request):
+        # 1. 接收请求;
+        # put, post ---- body
+        data = json.loads(request.body)
+        # 2. 获取数据;
+        email = data.get('email')
+        # 验证数据，正则
+
+        # 3. 保存邮箱地址;
+        # user / request.user 就是 登录用户的 实例对象
+        # user ---》 User
+        user = request.user
+        user.email = email
+        user.save()
+        # 4. 发送一封验证邮件;
+        # 5. 返回响应
+        return JsonResponse({'code': 0, 'errmsg': 'ok'})
+
+"""
+1. 夯实 django的基础
+2. 需求分析
+3. 学习新知识
+4. 掌握分析问题，解决问题的能力（debug）
+"""
