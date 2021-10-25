@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     mobile = models.CharField(max_length=11, unique=True)
+    email_activate = models.BooleanField(default=False, verbose_name="邮箱状态")
 
     class Meta:
         db_table = 'tb_users'
