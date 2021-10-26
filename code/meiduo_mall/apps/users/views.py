@@ -292,6 +292,27 @@ class EmailView(LoginRequiredJSONMixin, View):
         user.email = email
         user.save()
         # 4. 发送一封验证邮件;
+        from django.core.mail import send_mail
+        # subject, message, from_email, recipient_list,
+        # subject,          主题
+        subject = '美多商城激活邮件'
+        # message,          邮件内容
+        message = ""
+        # from_email,       发件人
+        from_email = '美多商城<qi_rui_hua@163.com>'
+        # recipient_list,    收件人列表
+        recipient_list = ['windowsphonewang@163.com']
+
+        html_message = "test email，请点击链接，进行验证<a href='http:www.baidu.com'>激活</a> "
+
+        # 邮件的内容如果是 html 这个时候，使用 html_message
+        # html_message = "点击按钮"
+        send_mail(subject=subject,
+                  message=message,
+                  from_email=from_email,
+                  recipient_list=recipient_list,
+                  html_message=html_message)
+
         # 5. 返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok'})
 
@@ -300,4 +321,13 @@ class EmailView(LoginRequiredJSONMixin, View):
 2. 需求分析
 3. 学习新知识
 4. 掌握分析问题，解决问题的能力（debug）
+"""
+"""
+设置邮件服务器的步骤
+1. 设置邮件服务器
+    我们设置    163 邮箱服务器
+    相当于 我们开启了 让163 帮助我们发送邮件; 同时设置了一些信息（特别是授权码）
+2. 设置邮件发送的配置信息
+
+3. 调用 send_mail 方法
 """
