@@ -302,16 +302,34 @@ class EmailView(LoginRequiredJSONMixin, View):
         from_email = '美多商城<qi_rui_hua@163.com>'
         # recipient_list,    收件人列表
         recipient_list = ['windowsphonewang@163.com']
+        # 4.1 对a标签的链接数据进行加密处理
+        # user_id = 1
+        from apps.users.utils import generic_emial_verify_token
+        token = generic_emial_verify_token(request.user.id)
 
-        html_message = "test email，请点击链接，进行验证<a href='http:www.baidu.com'>激活</a> "
+        verify_url = "http://www.meiduo.site:8080/success_verify_email.html?token=%s" % token
+        html_message = '<p>尊敬的用户您好！</p>' \
+                       '<p>感谢您使用美多商城。</p>' \
+                       '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
+                       '<p><a href="%s">%s<a></p>' % (email, verify_url, verify_url)
+
+        # html_message = "test email，请点击链接，进行验证<a href='http:www.baidu.com/?token=%s'>激活</a> " % token
 
         # 邮件的内容如果是 html 这个时候，使用 html_message
         # html_message = "点击按钮"
-        send_mail(subject=subject,
-                  message=message,
-                  from_email=from_email,
-                  recipient_list=recipient_list,
-                  html_message=html_message)
+        # send_mail(subject=subject,
+        #           message=message,
+        #           from_email=from_email,
+        #           recipient_list=recipient_list,
+        #           html_message=html_message)
+        from celery_tasks.email.tasks import celery_send_email
+        celery_send_email.delay(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipient_list,
+            html_message=html_message
+        )
 
         # 5. 返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok'})
