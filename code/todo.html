@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+<!--    {{message}}-->
+    <input type="text" name="" v-model="item">
+    <button @click="addTodo">添加</button>
+    <hr>
+    <ul>
+        <li v-for="todo in todos">{{todo}}</li>
+    </ul>
+</div>
+
+</body>
+<script type="text/javascript">
+  var app = new Vue({
+      el: '#app',
+      data: {
+          message: 'hello',
+          todos: ['vue','Django项目','DRF项目'],
+          item: ''
+      },
+      methods: {
+          addTodo: function (){
+              // alert(this.item)
+              this.todos.push(this.item)
+              this.item=""
+          }
+      }
+  })
+  var say = () => {
+      alert('abc')
+  }
+</script>
+</html>

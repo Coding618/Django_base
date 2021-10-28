@@ -1,0 +1,72 @@
+<!Document>
+<html>
+<head>
+    <title>
+        Hello World
+    </title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    {{message}}
+    [[message]]
+    <hr />
+    <a v-bind:href="next">点击有惊喜</a>
+    <hr />
+    <a href="#" v-if="islogin">个人中心</a>
+    <a href="#" v-else>登录</a>
+<hr />
+    <a href="#" v-if="level===1">皇帝</a>
+    <a href="#" v-else-if="level===2">皇亲</a>
+    <a href="#" v-else-if="level===3">大臣</a>
+    <a href="#" v-else="level">平民</a>
+    <br />
+    <span v-if="seen">if</span>
+    <span v-show="seen">show</span>
+    <hr>
+    <ul>
+<!--        <li v-for="shop in shops">[[shop]]</li>-->
+<!--        <li v-for="(shop, index) in shops">第[[index+1]]家店: [[shop]]</li>-->
+        <li v-for="(value, name) in object">[[name]]:[[value]]</li>
+    </ul>
+    <hr>
+    <button v-on:click="counter+=1">Add 1</button>
+    <span>this is rusult [[counter]] </span>
+    <button v-on:click="login">注册</button>
+    <hr>
+    <button v-on:click="sayHi('ruhua')">sayHi</button>
+
+
+</div>
+</body>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        delimiters: ['[[', ']]'],
+        data: {
+            message: "Hello World!!!",
+            next: 'http://www.baidu.com',
+            islogin: true,
+            level:2,
+            seen: false,
+            shops:['北京','广州','深圳', '上海', '石家庄'],
+            object: {
+                  title: 'How to do lists in Vue',
+                  author: 'Jane Doe',
+                  publishedAt: '2016-04-10'
+            },
+            counter: 1
+
+        },
+        methods: {
+            // 函数
+            login: function(){
+                alert('登录中～～～')
+            },
+            sayHi: function (message){
+                alert(message)
+            }
+        }
+    })
+</script>
+</html>

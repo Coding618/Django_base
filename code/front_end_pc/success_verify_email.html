@@ -41,6 +41,8 @@
                 success: true
             },
             created: function(){
+                // window.location.search
+                // ?token=XXXXXX
                 axios.put(this.host+'/emails/verification/'+ window.location.search,{
                     responseType: 'json',
                     withCredentials:true,

@@ -301,7 +301,7 @@ class EmailView(LoginRequiredJSONMixin, View):
         # from_email,       发件人
         from_email = '美多商城<qi_rui_hua@163.com>'
         # recipient_list,    收件人列表
-        recipient_list = ['windowsphonewang@163.com']
+        recipient_list = ['windowsphonewang@163.com', 'sherlock0618@qq.com']
         # 4.1 对a标签的链接数据进行加密处理
         # user_id = 1
         from apps.users.utils import generic_emial_verify_token
@@ -332,7 +332,7 @@ class EmailView(LoginRequiredJSONMixin, View):
         )
 
         # 5. 返回响应
-        return JsonResponse({'code': 0, 'errmsg': 'ok'})
+        return JsonResponse({'code': 0, 'errmsg': 'ok, 邮件发送成功'})
 
 """
 1. 夯实 django的基础
@@ -349,3 +349,45 @@ class EmailView(LoginRequiredJSONMixin, View):
 
 3. 调用 send_mail 方法
 """
+"""
+需求：获取token信息，接收验证，更新状态，返回响应
+前端：
+    用户点击激活链接后，那个激活链接携带了 token
+后端：
+    请求：         接收请求，获取参数，验证参数，
+    业务逻辑：       user_id, 根据用户id查询数据，修改数据
+    响应：         返回响应 JSON
+    
+    路由：         PUT         emails/verification/    说明： token 并没有在 body 里
+    步骤：
+        1. 接收参数
+        2. 获取参数
+        3. 验证参数
+        4. 获取 user_id
+        5. 根据用户 id 查询数据
+        6. 修改数据
+        7. 返回响应 JSON
+"""
+
+class EmailVerifyView(View):
+
+    def put(self, request):
+        # 1. 接收参数
+        params = request.GET
+        # 2. 获取参数
+        token = params.get('token')
+        # 3. 验证参数
+        if not token:
+            return JsonResponse({'code': 400, 'errmsg': '参数缺失'})
+        # 4. 获取 user_id
+        from apps.users.utils import check_verify_token
+        user_id = check_verify_token(token)
+        if user_id is None:
+            return JsonResponse({'code': 400, 'errmsg': '参数错误， 用户不存在'})
+        # 5. 根据用户 id 查询数据
+        user = User.objects.get(id=user_id)
+        # 6. 修改数据
+        user.email_activate = True
+        user.save()
+        # 7. 返回响应 JSON
+        return JsonResponse({'code': 0, 'errmsg': '邮件激活成功'})
