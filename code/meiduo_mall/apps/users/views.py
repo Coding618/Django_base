@@ -254,7 +254,7 @@ class CenterView(LoginRequiredJSONMixin,View):
             'username': request.user.username,
             'email': request.user.email,
             'mobile': request.user.mobile,
-            'email_activate': request.user.email_activate
+            'email_active': request.user.email_active
         }
         return JsonResponse({'code': 0, 'errmsg': 'OK!', 'info_data': info_data})
 
@@ -387,7 +387,7 @@ class EmailVerifyView(View):
         # 5. 根据用户 id 查询数据
         user = User.objects.get(id=user_id)
         # 6. 修改数据
-        user.email_activate = True
+        user.email_active = True
         user.save()
         # 7. 返回响应 JSON
         return JsonResponse({'code': 0, 'errmsg': '邮件激活成功'})

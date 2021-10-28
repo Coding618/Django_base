@@ -11,7 +11,7 @@ def generic_emial_verify_token(user_id):
 
 def check_verify_token(token):
     # 1. 创建实例
-    s = Serializer(secret_key=settings.SECRET_KEY, expires_in=3600*34)
+    s = Serializer(secret_key=settings.SECRET_KEY, expires_in=3600*24)
     # 2. 解密数据 --- 可能有异常
     try:
         result = s.loads(token)
