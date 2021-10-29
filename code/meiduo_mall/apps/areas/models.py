@@ -10,6 +10,7 @@ class Area(models.Model):
     parent = models.ForeignKey('self', on_delete=models.SET_NULL,
                                related_name='subs',
                                null=True, blank=True, verbose_name='上级行政区划')
+    # subs = [Area, Area, Area]
     # related_name  关联模型的名字
     # 默认是   关联模型类名小写  _set  area_set
     # 我们可以通过， related_name  修改默认的名字， 现在修改为 sebs;
@@ -30,5 +31,27 @@ class Area(models.Model):
 100200          深圳市             100000
 100101          南沙区             100100
 100102          番禺区             100100
+
+查询省份的信息
+    select * from tb_areas where parent_id is NULL;
+    Area.objects.filter(parent=None)
+    Area.objects.filter(parent__isnull=True)
+    Area.objects.filter(parent_id__isnull=True)
+    
+    
+查询城市的信息
+    select * from tb_areas where parent_id=440000;
+    Area.objects.filter(parent_id=130000)
+    Area.objects.filter(parent=130000)
+    
+    # 级联 
+    >>>province = Area.objects.get(id=130000)       省
+    >>>province.subs.all()                          市
+查询区县的信息
+    select * from tb_areas where parent_id=445100;
+    
+    >>>city = Area.objects.get(id=445100)           市   
+    >>>city.subs.all()                              区县
+
 """
 
