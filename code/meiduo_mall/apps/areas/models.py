@@ -49,7 +49,7 @@ class Area(models.Model):
     >>>province.subs.all()                          市
 查询区县的信息
     select * from tb_areas where parent_id=445100;
-    
+
     >>>city = Area.objects.get(id=445100)           市   
     >>>city.subs.all()                              区县
 
