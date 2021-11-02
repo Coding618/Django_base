@@ -1,7 +1,11 @@
+import json
+
 from django.shortcuts import render
 
 # Create your views here.
 from django.views import View
+
+from utils.views import LoginRequiredJSONMixin
 
 """
 需求：
@@ -85,4 +89,30 @@ class SubAreaView(View):
 下单比例        1%      1W  10000
 新增地址的概率   1%      100W  300次    2次
 不经常变化的数据    我们最好缓存到redis（内容）中，减少数据库的查询 
+"""
+
+"""
+请求
+业务逻辑    （数据库的增删查改）
+响应
+
+增   （注册）
+    1.接收数据
+    2.验证数据
+    3.数据入库
+    4.返回数据
+删
+    1.查询到指定记录
+    2.删除数据（物理删除，逻辑删除）
+    3.返回响应
+改   （个人的邮箱）
+    1.查询指定的记录
+    2.接收数据
+    3.验证数据
+    4.数据更新
+    5.返回响应
+查   （个人中心的数据展示，省市区）
+    1.查询指定数据
+    2.将对象数据，转换为字典数据
+    3.返回响应
 """

@@ -391,3 +391,78 @@ class EmailVerifyView(View):
         user.save()
         # 7. 返回响应 JSON
         return JsonResponse({'code': 0, 'errmsg': '邮件激活成功'})
+
+
+"""
+需求：
+    新增地址
+前端：
+    当用户编写完成地址信息后，前端发送应该发送一个axios请求，会携带  相关的信息  （POST -- body）
+后端：
+    请求：         接收请求，获取参数，验证参数;
+    业务逻辑：       数据入库
+    响应：         返回响应
+
+    路由：     POST    /addresses/create/
+    步骤：
+        1.接收请求
+        2.获取参数，验证参数
+        3.数据入库
+        4.返回响应
+"""
+from apps.users.models import Address
+
+
+class AddressCreateView(LoginRequiredJSONMixin, View):
+    def post(self, request):
+        # 1.接收请求
+        data = json.loads(request.body.decode())
+        # 2.获取参数，验证参数
+        receiver = data.get('receiver')
+        province_id = data.get('province_id')
+        city_id = data.get('city_id')
+        district_id = data.get('district_id')
+        place = data.get('place')
+        mobile = data.get('mobile')
+        tel = data.get('tel')
+        email = data.get('email')
+
+        user = request.user
+        # 验证参数(省略)
+        # 2.1 验证必填参数
+        # 2.2 省市区id， 是否正确
+        # 2.3 详细地址的长度
+        # 2.4 手机号
+        # 2.5 固定电话
+        # 2.6 邮箱
+        # 3.数据入库
+        address = Address.objects.create(
+            user=user,
+            title=receiver,
+            receiver=receiver,
+            province_id=province_id,
+            city_id=city_id,
+            district_id=district_id,
+            place=place,
+            mobile=mobile,
+            tel=tel,
+            email=email
+        )
+        address_dict = {
+            "id": address.id,
+            "title": address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city": address.city.name,
+            "district": address.district.name,
+            "place": address.place,
+            "mobile": address.mobile,
+            "tel": address.tel,
+            "email": address.email
+        }
+        # 4.返回响应
+        return JsonResponse({'code': 0, 'errmsg': 'ok~', 'address': address_dict})
+
+class AddressView(View):
+    def get(self, request):
+        pass
