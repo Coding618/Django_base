@@ -463,6 +463,26 @@ class AddressCreateView(LoginRequiredJSONMixin, View):
         # 4.返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok~', 'address': address_dict})
 
-class AddressView(View):
+class AddressView(LoginRequiredJSONMixin, View):
     def get(self, request):
-        pass
+        # 1.查询指定数据
+        user = request.user
+        # addresses = user.addresses
+        addressses = Address.objects.filter(user=user, is_deleted=False)
+        # 2.将对象数据，转换为字典数据
+        address_list = []
+        for item in addressses:
+            address_list.append({
+                'id': item.id,
+                'title': item.title,
+                'receiver': item.receiver,
+                'province': item.province.name,
+                'city': item.city.name,
+                'district': item.district.name,
+                'place': item.place,
+                'mobile': item.mobile,
+                'tel': item.tel,
+                'email': item.email
+            })
+        # 3.返回响应
+        return JsonResponse({'code': 0, 'errmsg': 'ok~ 查询地址成功～', 'addresses': address_list})
