@@ -31,15 +31,15 @@ stu_id      teacher_id
 
 """
 ############### 上传图片的代码 ##########################
-from fdfs_client.client import Fdfs_client
-
-# 1.创建客户端
-# 修改加载配置文件的路径
-client = Fdfs_client('utils/fastdfs/client.conf')
-
-# 2.上传图片
-# 图片的绝对路径
-client.upload_by_filename('/home/sherlock/Pictures/插件截图.png')
+# from fdfs_client.client import Fdfs_client
+#
+# # 1.创建客户端
+# # 修改加载配置文件的路径
+# client = Fdfs_client('utils/fastdfs/client.conf')
+#
+# # 2.上传图片
+# # 图片的绝对路径
+# client.upload_by_filename('/home/sherlock/Pictures/插件截图.png')
 
 """
 {'Group name': 'group1', 'Remote file_id': 'group1/M00/00/00/wKgfg2GbC9-ASAhtAAEr3bICYZQ204.png', 
@@ -48,3 +48,30 @@ client.upload_by_filename('/home/sherlock/Pictures/插件截图.png')
 """
 # 3.获取file_id, upload_by_filename 上传成功会返回字典数据
 # 字典数据中，有 file_id
+
+from django.views import View
+from utils.goods import get_categories
+from apps.contents.models import ContentCategory
+class IndexView(View):
+
+    def get(self, request):
+        """
+        首页数据分为2部分
+        1部分是 商品分类数据
+        2部分是 广告数据
+        :param request:
+        :return:
+        """
+        # 1.商品分类数据
+        categories = get_categories()
+        # 2.广告数据
+        contents = {}
+        content_categories = ContentCategory.objects.all()
+        for cat in content_categories:
+            contents[cat.key] = cat.content_set.filter(status=True).order_by('sequence')
+
+        context = {
+            'categories': categories,
+            'contents': contents,
+        }
+        return render(request, 'index.html', context)
