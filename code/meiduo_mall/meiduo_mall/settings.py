@@ -48,6 +48,10 @@ INSTALLED_APPS = [
     'apps.areas',
     'apps.goods',
     'apps.contents',
+    # CORS
+    # 'corsheaders',
+    # hayStack
+    'haystack',
 ]
 
 MIDDLEWARE = [
@@ -241,3 +245,12 @@ EMAIL_FROM = '美多商城<qi_rui_hua@163.com>'
 
 ###################### 自定义文件存储类 #############################
 DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.MyStorage'
+
+################### ElasticSearch ###################################3
+HAYSTACK_CONNECTIONS = {
+    'default':  {
+        'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'URL': 'http://192.168.31.132:9200/',
+        'INDEX_NAME': 'meiduo',
+    },
+}
