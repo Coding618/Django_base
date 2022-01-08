@@ -39,7 +39,7 @@ stu_id      teacher_id
 #
 # # 2.上传图片
 # # 图片的绝对路径
-# client.upload_by_filename('/home/sherlock/Pictures/插件截图.png')
+# client.upload_by_filename('/home/sherlock/Pictures/1.png')
 
 """
 {'Group name': 'group1', 'Remote file_id': 'group1/M00/00/00/wKgfg2GbC9-ASAhtAAEr3bICYZQ204.png', 
@@ -169,3 +169,31 @@ class ListView(View):
 6. 
  数据         <------------ HayStack ------------>        ElasticSearch    
 """
+"""
+    数据         <------------ HayStack ------------>        ElasticSearch
+    我们借助于 haystack 来对接 elasticsearch
+    所以 haystack 可以帮助我们 查询数据
+"""
+from haystack.views import SearchView
+from django.http import JsonResponse
+
+class SKUSearchView(SearchView):
+
+    def create_response(self):
+
+        # 获取搜索的结果
+        context = self.get_context()
+        # 遍历数据
+        sku_list = []
+        for sku in context['page'].object_list:
+            sku_list.append({
+                'id': sku.object.id,
+                'name': sku.object.name,
+                'price': sku.object.price,
+                'default_image_url': sku.object.default_image.url,
+                'searchkey': context.get('query'),
+                'page_size': context['page'].paginator.num_pages,
+                'count': context['page'].paginator.count
+            })
+        # 数据
+        return JsonResponse(sku_list, safe=False)

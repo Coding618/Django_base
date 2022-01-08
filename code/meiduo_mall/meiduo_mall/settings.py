@@ -245,12 +245,19 @@ EMAIL_FROM = '美多商城<qi_rui_hua@163.com>'
 
 ###################### 自定义文件存储类 #############################
 DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.MyStorage'
+########### 设置 FDFS 的配置文件信息 #############################
+# FDFS_BASE_URL = 'http://192.168.1.102:8888/' # my
+FDFS_BASE_URL = 'http://192.168.31.132:8888/' # ccw
+# FDFS_BASE_URL = 'http://image/meiduo.site:8888/'
+FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
 
 ################### ElasticSearch ###################################3
 HAYSTACK_CONNECTIONS = {
     'default':  {
-        'ENGINE': 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
-        'URL': 'http://192.168.31.132:9200/',
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.31.132:9200/',  # ccw
+        # 'URL': 'http://192.168.1.102:9200/',   # my
         'INDEX_NAME': 'meiduo',
     },
 }
+
