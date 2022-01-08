@@ -260,4 +260,5 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'meiduo',
     },
 }
-
+# 设置搜索 每页返回的记录条数
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
