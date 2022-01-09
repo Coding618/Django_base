@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # 'corsheaders',
     # hayStack
     'haystack',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -262,3 +263,12 @@ HAYSTACK_CONNECTIONS = {
 }
 # 设置搜索 每页返回的记录条数
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
+########################## 定时任务 #######################################
+"""
+第一个参数是   频次
+    分 时 日 月 周
+第二个参数是 定时任务（函数）
+"""
+CRONJOBS = [
+    ('*/1 * * * *', 'apps.contents.crons.generic_meiduo_index', '>> ' + os.path.join(BASE_DIR, 'logs/crontab.log'))
+]
