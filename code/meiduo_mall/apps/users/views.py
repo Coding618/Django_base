@@ -486,3 +486,71 @@ class AddressView(LoginRequiredJSONMixin, View):
             })
         # 3.返回响应
         return JsonResponse({'code': 0, 'errmsg': 'ok~ 查询地址成功～', 'addresses': address_list})
+
+##############################################
+"""
+一、根据页面效果，分析需求
+    1. 最近浏览记录   只有登录用户才可以访问。我们只记录登录用户的浏览记录
+    2. 浏览记录应该有顺序
+    3. 没有分页
+二、功能：
+    1. 在用户访问商品详情的时候，添加浏览记录
+    2. 在个人中心，展示浏览记录
+三、分析：
+    问题1：    保存哪些数据？     用户id、商品id、顺序（时间）
+    问题2：    保存在哪里？      一般要保存在数据库中  （缺点：慢; 频繁操作数据库）
+                            最好是redis中
+                            服务器内存较大，可以选择： MySQL + Redis
+user_id, sku_id, 顺序
+key: value          key(user_id)
+redis:
+    string:     X
+    list:       V
+    hash:       X(无顺序)
+    set:        X(无顺序)
+    zset:       V(无重复)
+                权重：值
+"""
+"""
+添加浏览记录：
+    前端：
+            当登录用户，访问一个具体的SKU页面的时候，发送一个axios请求;  请求携带    sku_id
+    后端：
+        请求：             接收请求，获取请求参数，验证参数
+        业务逻辑：          连接Redis，先去重，再保存到Redis中，只保存5条记录;
+        响应：             返回JSON
+        路由：            POST     browse_histories
+        步骤：
+            1. 接收请求
+            2. 获取参数
+            3. 验证参数
+            4. 连接 Redis，   list
+            5. 去重
+            6. 保存到Redis中;
+            7. 只保存5条记录
+            8. 返回JSON
+"""
+from apps.goods.models import SKU
+from django_redis import get_redis_connection
+def UserHistoryView(LoginRequiredJSONMixn, View):
+    def post(self, request):
+        user = request.user
+            # 1. 接收请求
+        data = json.loads(request.body.decode())
+            # 2. 获取参数
+        sku_id = data.get('sku_id')
+            # 3. 验证参数
+        try:
+            sku = SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return JsonResponse({'code': 400, 'errmsg': '没有此商品'})
+            # 4. 连接 Redis，   list
+        redis_cli = get_redis_connection('history')
+            # 5. 去重(先删除 这个商品id的数据，再添加就可以)
+        redis_cli.lrem('history_%s' % user.id, sku_id)
+            # 6. 保存到Redis中;
+        redis_cli.lpush('history_%s' % user.id, sku_id)
+            # 7. 只保存5条记录
+        redis_cli.ltrim('history_%s' % user.id, 0, 4)
+            # 8. 返回JSON
+        return JsonResponse({'code': 0, 'errmsg': 'OK!!!'})
