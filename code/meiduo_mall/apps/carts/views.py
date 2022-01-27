@@ -140,6 +140,8 @@ pickle.loads(decode_bytes)
     3.返回响应
 """
 from apps.goods.models import SKU
+import pickle
+import base64
 class CartsView(View):
     """
     前端：
@@ -205,17 +207,30 @@ class CartsView(View):
             #     4.4 返回响应
             return JsonResponse({'code': 0, 'errmsg': 'OK!添加购物车成功'})
         else:
-            pass
             # 5. 未登录用户保存cookie
-            #     5.1 先有cookie字典
-            carts = {
-                sku_id: {'count': count, 'selected': True}
+            # 5.0 先读取cookie数据
+            cookie_carts = request.COOKIES.get("carts")
+            if cookie_carts:
+                carts = pickle.loads(base64.b64decode(cookie_carts))
+            else:
+                #     5.1 先有cookie字典
+                carts = {}
+            # 判断商品id 是否在购物车cookie中
+            if sku_id in carts:
+                # 该商品存在 购物车的cookie中
+                origin_count = carts[sku_id]['count']
+                count += origin_count
+
+            carts[sku_id] = {
+                'count': count,
+                'selected': True
             }
+
             #     5.2 字典转为bytes
-            import pickle
+
             carts_bytes = pickle.dumps(carts)
             #     5.3 bytes类型数据 转为 base64编码
-            import base64
+
             base64encode = base64.b64encode(carts_bytes)
             #     5.4 设置cookie
             response = JsonResponse({'code': 0, 'errmsg': 'OK! 购物车加入cookie成功'})
