@@ -111,7 +111,7 @@ var vm = new Vue({
                         withCredentials: true
                     })
                     .then(response => {
-                        this.cart[index].count = response.data.cart_sku.count;
+                        this.cart[index].count = response.data.count;
                     })
                     .catch(error => {
                         console.log(error)
