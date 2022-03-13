@@ -391,3 +391,62 @@ class CartsView(View):
             response.set_cookie('carts', new_carts.decode(), max_age=14*24*3600)
             # 7. 返回响应
             return response
+
+    """
+    删除购物车中的商品
+    1.接收参数
+    2.验证参数
+    3.判断用户是否登录，根据用户状态处理
+    4.登录用户操作redis
+        4.1 连接redis
+        4.2 操作hash
+        4.3 操作set
+        4.4 返回响应
+    5.未登录用户操作cookie
+        5.1 读取cookie中的购物车数据
+        5.2 判断数据是否存在，删除数据{}
+            存在，则解码
+            不存在，则初始化字典
+        5.3 我们需要对字典数据进行编码和base64的加密处理
+        5.4 返回响应
+    """
+    def delete(self, request):
+        # 1.接收参数
+        user = request.user
+        data = json.loads(request.body.decode())
+        sku_id = data.get("sku_id")
+        # 2.验证参数
+        try:
+            SKU.objects.get(pk=sku_id)  # primary key
+        except SKU.DoesNotExist:
+            return JsonResponse({'code': 400, 'errmsg': "该商品不存在"})
+        # 3.判断用户是否登录，根据用户状态处理
+        if user.is_authenticated:
+            # 4.登录用户操作redis
+            #     4.1 连接redis
+            redis_cli = get_redis_connection("carts")
+            #     4.2 操作hash
+            redis_cli.hdel("carts_%s" % user.id, sku_id)
+            #     4.3 操作set
+            redis_cli.srem("carts_%s" % user.id, sku_id)
+            #     4.4 返回响应
+            return JsonResponse({'code': 0, "errmsg": "ok~删除成功"})
+        else:
+            # 5.未登录用户操作cookie
+            #     5.1 读取cookie中的购物车数据
+            cookie_carts = request.COOKIES.get("carts")
+            #     5.2 判断数据是否存在，删除数据{}
+            if cookie_carts is not None:
+            #         存在，则解码
+                carts = pickle.loads(base64.b64decode(cookie_carts))
+            else:
+            #         不存在，则初始化字典
+                carts = {}
+            del carts[sku_id]
+            #     5.3 我们需要对字典数据进行编码和base64的加密处理
+            new_carts = base64.b64encode(pickle.dumps(carts))
+            #     5.4 返回响应
+            response = JsonResponse({'code': 0, 'errmsg': "删除成功～"})
+            response.set_cookie('carts', new_carts.decode(), max_age=14*24*3600)
+            return response
+
