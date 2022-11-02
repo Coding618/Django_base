@@ -219,7 +219,8 @@ class DetailView(View):
         try:
             sku = SKU.objects.get(id=sku_id)
         except SKU.DoesNotExist:
-            print("sku_id查询失败")
+            # print("sku_id查询失败")
+            return JsonResponse({'code':400, 'errmsg': '缺少必传参数 sku_id '})
         # 1. 分类数据
         categories = get_categories()
         # 2. 面包屑

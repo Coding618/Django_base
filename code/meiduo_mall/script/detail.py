@@ -55,4 +55,5 @@ def generic_detail_html(sku):
 
 skus = SKU.objects.all()
 for sku in skus:
+    print(sku.id)
     generic_detail_html(sku)

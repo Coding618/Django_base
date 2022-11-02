@@ -54,6 +54,7 @@ def get_categories():
             categories[group_id]['sub_cats'].append(cat2)
 
     return categories
+
 """
 面包屑
 """
@@ -67,11 +68,14 @@ def get_breadcrumb(category):
     }
 
     if category.parent is None:
+        # 当前类别为一级类别
         dict['cat1'] = category.name
     elif category.parent.parent is None:
+        # 当前类别为二级
         dict['cat2'] = category.name
         dict['cat1'] = category.parent.name
     else:
+        # 当前类别为三级
         dict['cat3'] = category.name
         dict['cat2'] = category.parent.name
         dict['cat1'] = category.parent.parent.name

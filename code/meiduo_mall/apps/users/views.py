@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
 # Create your views here.
+from carts.utils import merge_carts_cookie_to_redis
+
 """
 需求分析：根据页面的功能，哪些问题，需要后端交互实现;
 如何确定  哪些功能需要 和 后端进行交互呢？
@@ -213,6 +215,8 @@ class LoginView(View):
         response = JsonResponse({'code': 0, 'errmsg': 'ok'})
         # 为了首页显示用户信息
         response.set_cookie('username', username)
+
+        response = merge_carts_cookie_to_redis(request, response)
         return response
 
 """
@@ -558,7 +562,7 @@ class UserHistoryView(LoginRequiredJSONMixin, View):
         try:
             sku = SKU.objects.get(id=sku_id)
         except SKU.DoesNotExist:
-            return JsonResponse({'code': 400, 'errmsg': '没有此商品'})
+            return JsonResponse({'code': 400, 'errmsg': 'sku不存在，没有此商品'})
             # 4. 连接 Redis，   list
         redis_cli = get_redis_connection('history')
             # 5. 去重(先删除 这个商品id的数据，再添加就可以)

@@ -184,6 +184,7 @@ class CartsView(View):
         data = json.loads(request.body.decode())
         sku_id = data.get("sku_id")
         count = data.get("count")
+        selected = data.get('selectedd', True)
         # 2. 验证数据
         try:
             sku = SKU.objects.get(id=sku_id)
@@ -194,6 +195,10 @@ class CartsView(View):
             count = int(count)
         except Exception:
             count = 1
+        # 判断selected是否为bool值
+        if selected:
+            if not isinstance(selected, bool):
+                return JsonResponse({'code': 400, 'errmsg': '参数selected有误'})
         # 3. 判断用户的登录状态
         user = request.user
         if user.is_authenticated:
@@ -211,7 +216,7 @@ class CartsView(View):
             # 5.0 先读取cookie数据
             cookie_carts = request.COOKIES.get("carts")
             if cookie_carts:
-                carts = pickle.loads(base64.b64decode(cookie_carts))
+                carts = pickle.loads(base64.b64decode(cookie_carts.encode()))
             else:
                 #     5.1 先有cookie字典
                 carts = {}
@@ -276,8 +281,8 @@ class CartsView(View):
             # {sku_id: {count:xxx, selected:xxx}}
             carts = {}
             for sku_id, count in sku_id_counts.items():
-                carts[sku_id] = {
-                    'count': count,
+                carts[int(sku_id)] = {
+                    'count': int(count),
                     'selected': sku_id in selected_ids
                 }
         else:
@@ -287,7 +292,7 @@ class CartsView(View):
             #     3.2 判断是否存在购物车数据
             if cookie_carts is not None:
             #         如果存在，则解码            {sku_id:{count:zzzz, selected:xxx}}
-                carts = pickle.loads(base64.b64decode(cookie_carts))
+                carts = pickle.loads(base64.b64decode(cookie_carts.encode()))
             else:
             #         如果不存在，则初始化数据，加密
                 carts = {}
@@ -355,9 +360,9 @@ class CartsView(View):
             #     4.1 链接redis
             redis_cli = get_redis_connection('carts')
             #     4.2 hash
-            redis_cli.hset('carts_%s' % sku_id, sku_id, count)
+            redis_cli.hset('carts_%s' % user.id, sku_id, count)
             #     4.3 set
-            redis_cli.srem('carts_%s' % sku_id, sku_id)
+            redis_cli.srem('carts_%s' % user.id, sku_id)
             #     4.4 返回响应
             return JsonResponse({'code': 0, 'errmsg': "ok！修改成功", 'cart_sku':{
                 'count': count,
