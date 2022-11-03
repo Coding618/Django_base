@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'apps.goods',
     'apps.contents',
     'apps.carts',
+    'apps.orders',
     # CORS
     # 'corsheaders',
     # hayStack
@@ -264,6 +265,7 @@ DEFAULT_FILE_STORAGE = 'utils.fastdfs.storage.MyStorage'
 ########### 设置 FDFS 的配置文件信息 #############################
 # FDFS_BASE_URL = 'http://192.168.1.102:8888/' # my
 FDFS_BASE_URL = 'http://192.168.31.132:8888/' # ccw
+# FDFS_BASE_URL = 'http://192.168.64.208:8888/' # library
 # FDFS_BASE_URL = 'http://image/meiduo.site:8888/'
 FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
 
@@ -273,6 +275,7 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
         'URL': 'http://192.168.31.132:9200/',  # ccw
         # 'URL': 'http://192.168.1.102:9200/',   # my
+        # 'URL': 'http://192.168.64.208:9200/',   # library
         'INDEX_NAME': 'meiduo',
     },
 }
