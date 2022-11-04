@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from carts.utils import merge_carts_cookie_to_redis
+from apps.carts.utils import merge_carts_cookie_to_redis
 
 """
 需求分析：根据页面的功能，哪些问题，需要后端交互实现;
