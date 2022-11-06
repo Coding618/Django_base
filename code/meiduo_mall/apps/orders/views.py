@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 
 # Create your views here.
@@ -91,3 +93,101 @@ class OrderSettlementView(LoginRequiredJSONMixin, View):
             'code': 200,
             'errmsg': 'ok~',
             'context': context})
+
+"""
+需求：     点击提交订单，生成订单
+前端：     发送axiso请求，POST  携带数据    地址id， 支付方式，携带账户的session信息（cookie）
+            不传 总金额，商品id 和 数量    （从后端获取） 
+后端：     
+    请求：     接收请求，验证数据
+    业务逻辑：   数据入库
+    响应：     返回响应
+    
+    路由：     POST    
+    步骤：     
+        一、接收请求     user, address_id, pay_method
+        二、验证数据
+            order_id    主键（自己生成）
+            支付状态由支付方式决定
+            总数量，总金额，运费
+        三、数据入库     生成订单（订单基本信息表和订单商品信息表）
+            1. 先保存订单基本信息
+            2. 再保存订单商品信息
+                2.1 连接redis
+                2.2 获取 hash
+                2.3 获取 set
+                2.4 遍历选中商品的id。
+                    最好重写组织一个数据，这个数据是选中的商品信息
+                    {sku_id:count, sku_id:count}
+                2.5 遍历 根据选中商品的id 进行查询
+                2.6 判断库存是否充足。
+                2.7 如果不充足，下单失败。
+                2.8 如果充足，到库减少，销量增加。
+                2.9 累加总数量和总金额。
+                2.10 保存订单商品信息
+            3. 更新订单的总金额和总数量
+            4. 将redis中选中的商品信息移除出去。
+        四、返回响应。         
+                    
+"""
+from django.utils import timezone
+from apps.orders.models import OrderInfo, OrderGoods
+class OrderCommitView(LoginRequiredJSONMixin, View):
+    def post(self, request):
+        # 一、接收请求     user, address_id, pay_method
+        user = request.user
+        data = json.loads(request.body.deconde())
+        address_id = data.get('address_id')
+        pay_method = data.get('pay_method')
+        if not all([address_id, pay_method]):
+            return JsonResponse({'code': 400, 'errmsg': '缺少必要参数'})
+        try:
+            address = Address.objects.filter(id=address_id)
+        except Exception:
+            return JsonResponse({'code': 400, 'errmsg': '参数address_id错误'})
+        # 二、验证数据
+        #     order_id    主键（自己生成）
+        order_id = timezone.localtime().strftime('%Y%m%d%H%M%S') + ('%09d' % user.id)
+        # 先验证pay_method格式的合法性
+        if pay_method not in [OrderInfo.PAY_METHODS_CHOICES['CASH'], OrderInfo.PAY_METHODS_CHOICES['ALIPAY']]:
+            return JsonResponse({'code': 400, 'errmsg': '参数pay_method格式错误'})
+        #     支付状态由支付方式决定
+        if pay_method == OrderInfo.PAY_METHODS_ENUM['CASH']:
+            pay_status = OrderInfo.ORDER_STATUS_ENUM['UNSEND']
+        elif pay_method == OrderInfo.PAY_METHODS_ENUM['ALIPAY']:
+            pay_menthod = OrderInfo.ORDER_STATUS_ENUM['UNPAID']
+        #     总数量=0,
+        total_count = 0
+        # 总金额 = 0，
+        total_amount = 0
+        #     运费
+        freight = Decimal('10.0')
+        # 三、数据入库     生成订单（订单基本信息表和订单商品信息表）
+        #     1. 先保存订单基本信息
+        OrderInfo.objects.create(
+            order_id=order_id,
+            user=user,
+            address=address,
+            total_count=total_count,
+            total_amount=total_amount,
+            freight=freight,
+            pay_method=pay_method,
+            status=pay_status
+        )
+        #     2. 再保存订单商品信息
+        #         2.1 连接redis
+        #         2.2 获取 hash
+        #         2.3 获取 set
+        #         2.4 遍历选中商品的id。
+        #             最好重写组织一个数据，这个数据是选中的商品信息
+        #             {sku_id:count, sku_id:count}
+        #         2.5 遍历 根据选中商品的id 进行查询
+        #         2.6 判断库存是否充足。
+        #         2.7 如果不充足，下单失败。
+        #         2.8 如果充足，到库减少，销量增加。
+        #         2.9 累加总数量和总金额。
+        #         2.10 保存订单商品信息
+        #     3. 更新订单的总金额和总数量
+        #     4. 将redis中选中的商品信息移除出去。
+        # 四、返回响应。,,
+        pass
